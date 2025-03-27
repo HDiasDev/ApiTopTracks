@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Tracks do Spotify</title>
+    <style>
+        /* Estilos globais */
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            color: #1DB954;
+        }
+
+        #searchForm {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        #searchForm input {
+            padding: 0.75rem 1rem;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            width: 80%;
+            background-color: #333;
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #searchForm input:focus {
+            background-color: #1DB954;
+        }
+
+        #searchForm button {
+            padding: 0.75rem 2rem;
+            background-color: #1DB954;
+            color: white;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 50px;
+            margin-left: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        #searchForm button:hover {
+            background-color: #1ed760;
+        }
+
+        #loadingMessage {
+            display: none;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+
+        /* Estilo da lista de faixas */
+        #trackList {
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 2rem;
+            overflow-y: auto;
+        }
+
+        #trackList li {
+            background-color: #333;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        #trackList li:hover {
+            background-color: #444;
+        }
+
+        #trackList a {
+            color: #1DB954;
+            text-decoration: none;
+            font-weight: bold;
+            transition: text-decoration 0.3s ease;
+        }
+
+        #trackList a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            #searchForm input {
+                width: 70%;
+            }
+
+            #searchForm button {
+                width: 30%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Top Tracks do Spotify</h1>
+
+    <form id="searchForm">
+        <input type="text" id="artistName" placeholder="Digite o nome do artista" required>
+        <button type="submit">Buscar</button>
+    </form>
+
+    <div id="loadingMessage">Carregando...</div>
+
+    <ul id="trackList"></ul>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const searchForm = document.getElementById('searchForm');
+        const trackList = document.getElementById('trackList');
+        const loadingMessage = document.getElementById('loadingMessage');
+
+        // Substitua com seu próprio token de acesso
+        const accessToken = 'BQC3vC6Ui3dnbA-moVaKXL_nPCe_rGgQjI9xS0FkJ4tIrzCxlcOpT0HfGSyXziP701ia6XTGsHe-2wECIdsjybeAMOaobxtpkxxA3BESs9yqGQhlgu6qIgy6G43IbWm1HpDUT_hMxxccDkj85KzABVML-cl2OZNw46Sa2PNlZ5_YAJrQMMDCK0NAk7zMIMNldnMdZK9x-tXOvquGdVc3qeVor-UICYMp0zh_1uHLVjFmOvALUoK_65s9h-ETsg';
+
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const artistName = document.getElementById('artistName').value;
+
+            // Validar se o nome do artista foi preenchido
+            if (!artistName) {
+                alert("Por favor, insira o nome do artista!");
+                return;
+            }
+
+            loadingMessage.style.display = 'block'; // Mostrar carregando
+
+            try {
+                const response = await axios.get(`http://localhost:3000/artist-top-tracks?artistName=${artistName}&access_token=${accessToken}`);
+                const tracks = response.data.tracks;
+
+                trackList.innerHTML = ''; // Limpar lista anterior
+
+                if (tracks.length === 0) {
+                    trackList.innerHTML = '<li>Nenhuma música encontrada.</li>';
+                } else {
+                    tracks.forEach(track => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
+                            <a href="${track.url}" target="_blank">${track.name}</a> - ${track.artist}
+                        `;
+                        trackList.appendChild(listItem);
+                    });
+                }
+            } catch (error) {
+                console.error("Erro ao buscar as faixas:", error);
+                trackList.innerHTML = '<li>Erro ao buscar as faixas.</li>';
+            } finally {
+                loadingMessage.style.display = 'none'; // Esconder carregando
+            }
+        });
+    </script>
+</body>
+</html>
